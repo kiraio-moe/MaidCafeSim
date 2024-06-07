@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.macawls.oceanfsm": "https://github.com/Macawls/OceanFsm.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.spriteshape": "9.0.3",
     "com.unity.cinemachine": "2.10.0",

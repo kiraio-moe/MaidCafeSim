@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4007410872804388976}
   - component: {fileID: 3567442182950193081}
-  - component: {fileID: 8775817118441427157}
   - component: {fileID: 7427304228660975308}
+  - component: {fileID: 1463126229357457426}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -86,21 +86,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8775817118441427157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4810587163863558587}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb6580d937937a54ba5a593313252ae0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IdleParameter: OnIdle
-  m_WalkParameter: OnWalk
-  m_EatParameter: OnEat
 --- !u!95 &7427304228660975308
 Animator:
   serializedVersion: 5
@@ -111,7 +96,7 @@ Animator:
   m_GameObject: {fileID: 4810587163863558587}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5181e03cb64f6f2448dd06e71b0b2126, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -122,6 +107,27 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1463126229357457426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4810587163863558587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5525c25cde35d5044839a7c87786ddcf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Idle:
+    m_AnimationStateName: 
+    m_TransitionDuration: 0.15
+  m_Walk:
+    m_AnimationStateName: 
+    m_TransitionDuration: 0.15
+  m_OnStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &8383620020693771776
 GameObject:
   m_ObjectHideFlags: 0
@@ -169,7 +175,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Target: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_LoopMode: 0
   m_Method: 1
   m_Duration: 7.378557
@@ -192,12 +198,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MoveSpeed: 2
-  m_OnStart:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnUpdate:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnEnd:
-    m_PersistentCalls:
-      m_Calls: []
