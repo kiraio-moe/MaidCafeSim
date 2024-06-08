@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1793369542, guid: dab9360861e47df49b9389de47eec837, type: 3}
+  m_Sprite: {fileID: -567905159, guid: dab9360861e47df49b9389de47eec837, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -140,7 +140,7 @@ GameObject:
   - component: {fileID: 6324755601781447019}
   - component: {fileID: 5564672344296689464}
   m_Layer: 0
-  m_Name: Customer
+  m_Name: Customer 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -178,7 +178,7 @@ MonoBehaviour:
   m_PlayOnAwake: 0
   m_LoopMode: 0
   m_Method: 1
-  m_Duration: 7.3785567
+  m_Duration: 7.378557
   m_MaxSpeed: 2
   m_EasingMode: 2
   m_AlignmentMode: 2
