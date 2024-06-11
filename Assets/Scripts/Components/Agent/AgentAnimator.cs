@@ -2,7 +2,6 @@ using MaidCafe.Components.Agent.StateMachine;
 using MaidCafe.Components.Agent.StateMachine.States;
 using OceanFSM;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace MaidCafe.Components.Agent
 {
@@ -17,22 +16,21 @@ namespace MaidCafe.Components.Agent
         [SerializeField]
         Walk m_Walk;
 
-        [Header("Events")]
-        [SerializeField]
-        UnityEvent<string> m_OnStateChanged;
-
         Animator animator;
         AgentController agentController;
         IAutonomousMachine<IAgent> stateMachine;
 
         public Animator Animator => animator;
         public AgentController AgentController => agentController;
-        public UnityEvent<string> OnStateChanged
+
+        public delegate void OnStateChangedAction();
+        public event OnStateChangedAction OnStateChanged;
+
+        public IAutonomousMachine<IAgent> StateMachine
         {
-            get => m_OnStateChanged;
-            set => m_OnStateChanged = value;
+            get => stateMachine;
+            private set => stateMachine = value;
         }
-        public IAutonomousMachine<IAgent> StateMachine => stateMachine;
         public Idle Idle => m_Idle;
         public Walk Walk => m_Walk;
 
@@ -42,59 +40,39 @@ namespace MaidCafe.Components.Agent
             agentController = GetComponentInParent<AgentController>();
 
             // Set initial state
-            stateMachine = new AutonomousBuilder<IAgent>(this)
+            StateMachine = new AutonomousBuilder<IAgent>(this)
                 .SetInitialState(nameof(Idle))
                 .AddState(Idle)
                 .AddState(Walk)
                 .Build();
 
-            Debug.Log(
-                $"Initial State: {stateMachine.CurrentState} | IsPlaying: {agentController.SplineAnimate.IsPlaying}"
-            );
+            StateMachine
+                .AddCommand(Walk.Name)
+                .SetTargetState<Walk>()
+                .SetCondition(() => StateMachine.CurrentState is Idle && !AgentController.IsMoving);
         }
 
         void OnEnable()
         {
-            stateMachine.Start();
-            stateMachine.StateChanged += StateChanged;
+            StateMachine.Start();
+            StateMachine.StateChanged += StateChanged;
         }
 
         void OnDisable()
         {
-            stateMachine.Stop();
-            stateMachine.StateChanged -= StateChanged;
-        }
-
-        void Start()
-        {
-            stateMachine
-                .AddCommand(Walk.Name)
-                .SetTargetState<Walk>()
-                .SetCondition(
-                    () =>
-                        stateMachine.CurrentState is Idle
-                        && !agentController.SplineAnimate.IsPlaying
-                )
-                .OnSuccess(() => Debug.Log("Agent is walking..."))
-                .OnFailure(
-                    () =>
-                        Debug.LogError(
-                            $"Current State: {stateMachine.CurrentState} | IsPlaying: {agentController.SplineAnimate.IsPlaying}"
-                        )
-                );
-
-            stateMachine.ExecuteCommand(Walk.Name);
+            StateMachine.Stop();
+            StateMachine.StateChanged -= StateChanged;
         }
 
         void StateChanged(State<IAgent> state)
         {
-            m_OnStateChanged?.Invoke(state.GetType().Name);
-            Debug.Log($"State: {stateMachine.CurrentState.GetType().Name}");
+            OnStateChanged?.Invoke();
+            Debug.Log($"State: {StateMachine.CurrentState.GetType().Name}");
         }
 
         void Update()
         {
-            stateMachine.Update(Time.deltaTime);
+            StateMachine.Update(Time.deltaTime);
         }
     }
 }

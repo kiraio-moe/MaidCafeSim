@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Splines;
 
 namespace MaidCafe.Components.Environments
 {
@@ -7,9 +6,21 @@ namespace MaidCafe.Components.Environments
     public class Table : MonoBehaviour
     {
         bool isOccupied;
-        // SplineContainer[] chairs;
 
-        public bool IsOccupied { get; set; }
-        // public SplineContainer[] Chairs => chairs;
+        public bool IsOccupied
+        {
+            get => isOccupied;
+            set => isOccupied = value;
+        }
+
+        void Reset()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                GameObject chair = new($"Chair_{i}");
+                chair.transform.SetParent(transform, false);
+                chair.AddComponent(typeof(Chair));
+            }
+        }
     }
 }

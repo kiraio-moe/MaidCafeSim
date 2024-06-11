@@ -1,191 +1,119 @@
-// using UnityEngine;
-// using UnityEngine.Events;
-// using UnityEngine.Splines;
-
-// namespace MaidCafe.Components.Agent
-// {
-// 	[RequireComponent(typeof(SplineAnimate))]
-// 	public abstract class AgentController : MonoBehaviour
-// 	{
-// 		[Header("Movement")]
-// 		[SerializeField]
-// 		float m_MoveSpeed = 2f;
-// 		
-// 		[Header("Events")]
-// 		[Tooltip("Events executed when the Agent start moving.")]
-// 		[SerializeField]
-// 		UnityEvent m_OnStart;
-// 		
-// 		[Tooltip("Events executed everytime the Agent passed the knot (point) of the Spline.")]
-// 		[SerializeField]
-// 		UnityEvent m_OnUpdate;
-// 		
-// 		[Tooltip("Events executed when the Agent finished moving along the Spline.")]
-// 		[SerializeField]
-// 		UnityEvent m_OnEnd;
-// 		
-// 		SplineAnimate splineAnimate;
-// 		
-// 		public float MoveSpeed
-// 		{
-// 			get => m_MoveSpeed;
-// 			set => m_MoveSpeed = value;
-// 		}
-// 		
-// 		public UnityEvent OnStart
-// 		{
-// 			get => m_OnStart;
-// 			set => m_OnStart = value;
-// 		}
-// 		
-// 		public UnityEvent OnUpdate
-// 		{
-// 			get => m_OnUpdate;
-// 			set => m_OnUpdate = value;
-// 		}
-// 		
-// 		public UnityEvent OnEnd
-// 		{
-// 			get => m_OnEnd;
-// 			set => m_OnEnd = value;
-// 		}
-// 		
-// 		public SplineAnimate SplineAnimate { get; private set; }
-// 		
-// 		void Reset()
-// 		{
-// 			splineAnimate = GetComponent<SplineAnimate>();
-// 			splineAnimate.Alignment = SplineAnimate.AlignmentMode.SplineObject;
-// 			splineAnimate.AnimationMethod = SplineAnimate.Method.Speed;
-// 			splineAnimate.Easing = SplineAnimate.EasingMode.EaseOut;
-// 			splineAnimate.Loop = SplineAnimate.LoopMode.Once;
-// 			splineAnimate.MaxSpeed = m_MoveSpeed;
-// 			splineAnimate.PlayOnAwake = false;
-// 		}
-// 		
-// 		void Awake()
-// 		{
-// 			splineAnimate = GetComponent<SplineAnimate>();
-// 			splineAnimate.PlayOnAwake = false;
-// 		}
-// 		
-// 		void OnEnable()
-// 		{
-// 			splineAnimate.Updated += OnSplineUpdate;
-// 			splineAnimate.Completed += () => m_OnEnd?.Invoke();
-// 		}
-// 		
-// 		public void StartMove(bool reverse = false)
-// 		{
-// 			splineAnimate.StartOffset = reverse ? 1 : 0;
-// 			m_OnStart?.Invoke();
-// 			splineAnimate.Play();
-// 		}
-// 		
-// 		public void ChangeSplineContainer(SplineContainer container)
-// 		{
-// 			splineAnimate.Container = container;
-// 		}
-// 		
-// 		public float SetMoveSpeed(float speed)
-// 		{
-// 			return m_MoveSpeed = speed;
-// 		}
-// 		
-// 		void OnSplineUpdate(Vector3 position, Quaternion rotation)
-// 		{
-// 			m_OnUpdate?.Invoke();
-// 		}
-// 	}
-// }
-
 using UnityEngine;
 using UnityEngine.Splines;
 
 namespace MaidCafe.Components.Agent
 {
-	[RequireComponent(typeof(SplineAnimate))]
-	public abstract class AgentController : MonoBehaviour
-	{
-		[Header("Settings")]
-		[SerializeField]
-		float m_MoveSpeed = 2f;
+    public abstract class AgentController : MonoBehaviour
+    {
+        [Header("Settings")]
+        [SerializeField]
+        float m_MoveSpeed = 2f;
 
-		public delegate void StartAction();
-		public delegate void UpdateAction(Vector3 position, Quaternion rotation);
-		public delegate void EndAction();
+        public delegate void StartAction();
+        public delegate void UpdateAction(float deltaTime);
+        public delegate void EndAction();
 
-		public event StartAction OnStart;
-		public event UpdateAction OnUpdate;
-		public event EndAction OnEnd;
+        /// <summary>
+        /// Invoke events when Agent start moving.
+        /// </summary>
+        public event StartAction OnStart;
 
-		SplineAnimate splineAnimate;
+        /// <summary>
+        /// Invoke events on every frame when Agent is currently moving.
+        /// </summary>
+        public event UpdateAction OnUpdate;
 
-		public float MoveSpeed
-		{
-			get => m_MoveSpeed;
-			set => m_MoveSpeed = value;
-		}
+        /// <summary>
+        /// Invoke events when Agent stop moving.
+        /// </summary>
+        public event EndAction OnEnd;
 
-		public SplineAnimate SplineAnimate
-		{
-			get => splineAnimate;
-		}
+        SplineContainer splineContainer;
+        Spline currentSpline;
+        float normalizedTime;
+        bool isMoving;
+        bool isReversed;
+        Vector3 direction,
+            tangent;
 
-		void Reset()
-		{
-			splineAnimate = GetComponent<SplineAnimate>();
-			splineAnimate.Alignment = SplineAnimate.AlignmentMode.SplineObject;
-			splineAnimate.AnimationMethod = SplineAnimate.Method.Speed;
-			splineAnimate.Easing = SplineAnimate.EasingMode.EaseOut;
-			splineAnimate.Loop = SplineAnimate.LoopMode.Once;
-			splineAnimate.MaxSpeed = m_MoveSpeed;
-			splineAnimate.PlayOnAwake = false;
-		}
+        public float MoveSpeed
+        {
+            get => m_MoveSpeed;
+            set => m_MoveSpeed = value;
+        }
+        public SplineContainer SplineContainer
+        {
+            get => splineContainer;
+            set => splineContainer = value;
+        }
+        public bool IsMoving
+        {
+            get => isMoving;
+            set => isMoving = value;
+        }
 
-		void Awake()
-		{
-			splineAnimate = GetComponent<SplineAnimate>();
-			splineAnimate.PlayOnAwake = false;
-		}
+        public void StartMove(bool reverse = false)
+        {
+            IsMoving = true;
+            // isReversed = reverse;
+            currentSpline = SplineContainer.Splines[0];
 
-		void OnEnable()
-		{
-			splineAnimate.Updated += OnSplineUpdate;
-			splineAnimate.Completed += OnCompleted;
-		}
+            OnStart?.Invoke();
+            OnUpdate += Move;
+        }
 
-		void OnDisable()
-		{
-			splineAnimate.Updated -= OnSplineUpdate;
-			splineAnimate.Completed -= OnCompleted;
-		}
+        void Move(float deltaTime)
+        {
+            if (isMoving)
+            {
+                // Move the GameObject along the spline
+                normalizedTime += Mathf.Clamp01(
+                    m_MoveSpeed * deltaTime / currentSpline.GetLength() * (isReversed ? -1 : 1)
+                );
+                Vector3 currentPosition = SplineContainer.EvaluatePosition(
+                    currentSpline,
+                    normalizedTime
+                );
 
-		public void StartMove(bool reverse = false)
-		{
-			splineAnimate.StartOffset = reverse ? 1 : 0;
-			OnStart?.Invoke();
-			splineAnimate.Play();
-		}
+                transform.SetLocalPositionAndRotation(currentPosition, Quaternion.identity);
+                // Optional: Make the GameObject face along the spline direction
+                Vector3 nextPosition = SplineContainer.EvaluatePosition(normalizedTime + 0.05f);
+                direction = nextPosition - currentPosition;
+                // transform.rotation = Quaternion.LookRotation(direction, transform.up);
+                tangent = SplineContainer.EvaluateTangent(normalizedTime);
+                // transform.rotation = Quaternion.LookRotation(tangent);
 
-		public void ChangeSplineContainer(SplineContainer container)
-		{
-			splineAnimate.Container = container;
-		}
+                if (normalizedTime >= 1)
+                {
+                    isMoving = false; // Stop at the end of the spline
+                    OnEnd?.Invoke();
+                    OnUpdate -= Move;
+                }
+            }
+        }
 
-		public float SetMoveSpeed(float speed)
-		{
-			return m_MoveSpeed = speed;
-		}
+        void Update()
+        {
+            // Move(isMoving);
+            OnUpdate?.Invoke(Time.deltaTime);
+        }
 
-		void OnSplineUpdate(Vector3 position, Quaternion rotation)
-		{
-			OnUpdate?.Invoke(position, rotation);
-		}
+        /// <summary>
+        /// Change the Spline to follow.
+        /// </summary>
+        /// <param name="spline"></param>
+        public void ChangeSpline(Spline spline)
+        {
+            currentSpline = spline;
+        }
 
-		private void OnCompleted()
-		{
-			OnEnd?.Invoke();
-		}
-	}
+        /// <summary>
+        /// Change the Spline Container.
+        /// </summary>
+        /// <param name="container"></param>
+        public void ChangeSplineContainer(SplineContainer container)
+        {
+            SplineContainer = container;
+        }
+    }
 }

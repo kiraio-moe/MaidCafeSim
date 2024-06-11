@@ -1,32 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Splines;
+using Zelude;
 
 namespace MaidCafe.Components.Agent
 {
     public abstract class AgentSpawner : MonoBehaviour
     {
-        [Header("Sprites Variety")]
+        [Header("Settings")]
         [SerializeField]
-        List<AgentController> m_AgentsPrefab;
+        AgentController[] m_AgentsPrefab;
 
-        [Header("Splines List")]
-        [SerializeField]
-        List<SplineContainer> m_OutSplines;
+        [SerializeField, MinMaxSlider(1, 4)]
+        Vector2 m_RandomizeAgentIndex = new(1, 4);
 
-        public List<AgentController> AgentsPrefab => m_AgentsPrefab;
+        public AgentController[] AgentsPrefab => m_AgentsPrefab;
+        public Vector2 RandomizeAgentIndex => m_RandomizeAgentIndex;
 
-        public virtual void Spawn(AgentController agent, SplineContainer spline)
+        void OnValidate()
+        {
+            m_RandomizeAgentIndex = new(
+                Mathf.RoundToInt(m_RandomizeAgentIndex.x),
+                Mathf.RoundToInt(m_RandomizeAgentIndex.y)
+            );
+        }
+
+        /// <summary>
+        /// Spawn agent to follow a Spline path.
+        /// </summary>
+        /// <param name="agent"></param>
+        /// <param name="spline"></param>
+        /// <returns>The instantiated Agent.</returns>
+        public virtual AgentController Spawn(AgentController agent, SplineContainer spline)
         {
             Vector3 initialKnotPosition = spline.Spline.ToArray()[0].Position;
             AgentController newAgent = Instantiate(agent, initialKnotPosition, Quaternion.identity);
-            newAgent.GetComponent<SplineAnimate>().Container = spline;
-            newAgent.OnEnd += () => Destroy(newAgent.gameObject);
+            // newAgent.GetComponent<SplineAnimate>().Container = spline;
+            newAgent.SplineContainer = spline;
+            return newAgent;
         }
 
-        public virtual void Update()
-        {
-        }
+        public virtual void Update() { }
     }
 }

@@ -1,7 +1,6 @@
 using System.Collections;
 using MaidCafe.Components.Environments;
 using UnityEngine;
-using UnityEngine.Splines;
 
 namespace MaidCafe.Components.Agent.Customer
 {
@@ -31,21 +30,22 @@ namespace MaidCafe.Components.Agent.Customer
             {
                 if (!table.IsOccupied) //Table empty, then spawn
                 {
-                    int groupCount = Random.Range(4, 4);
+                    int groupCount = Mathf.RoundToInt(
+                        Random.Range(RandomizeAgentIndex.x, RandomizeAgentIndex.y)
+                    );
+
                     for (int i = 0; i < groupCount; i++)
                     {
-                        SplineContainer chair = table
-                            .transform.GetChild(i)
-                            .GetComponent<SplineContainer>();
-                        int agentIndex =
-                            AgentsPrefab.Count == 1 ? 0 : Random.Range(0, AgentsPrefab.Count); // Spawn random agent variety
-                        Spawn(AgentsPrefab[agentIndex], chair);
-                        //Set the spline to the chair
+                        Chair chair = table.transform.GetChild(i).GetComponent<Chair>();
+                        int agentIndex = Random.Range(0, AgentsPrefab.Length); // Spawn random agent variety
+                        Spawn(AgentsPrefab[agentIndex], chair.Container);
                     }
+
                     table.IsOccupied = true;
                     break;
                 }
             }
+
             yield return new WaitForSeconds(delay);
             canSpawn = true;
         }
