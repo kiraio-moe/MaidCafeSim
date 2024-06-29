@@ -46,10 +46,18 @@ namespace MaidCafe.Components.Agent
                 .AddState(Walk)
                 .Build();
 
+            // Register State Commands
+            StateMachine
+                .AddCommand(Idle.Name)
+                .SetTargetState<Idle>()
+                .SetCondition(() => !AgentController.IsMoving);
             StateMachine
                 .AddCommand(Walk.Name)
                 .SetTargetState<Walk>()
                 .SetCondition(() => StateMachine.CurrentState is Idle && !AgentController.IsMoving);
+
+            StateMachine.ExecuteCommand(Idle.Name);
+            Debug.Log($"Init State: {StateMachine.CurrentState.GetType().Name}");
         }
 
         void OnEnable()
@@ -67,7 +75,7 @@ namespace MaidCafe.Components.Agent
         void StateChanged(State<IAgent> state)
         {
             OnStateChanged?.Invoke();
-            Debug.Log($"State: {StateMachine.CurrentState.GetType().Name}");
+            Debug.Log($"Change State: {StateMachine.CurrentState.GetType().Name}");
         }
 
         void Update()

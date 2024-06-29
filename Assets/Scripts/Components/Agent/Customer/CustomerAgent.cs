@@ -23,5 +23,11 @@ namespace MaidCafe.Components.Agent.Customer
             ).GetComponent<CustomerAnimator>();
             CustomerAnimator.transform.SetParent(transform);
         }
+
+        void Awake()
+        {
+            if (CustomerAnimator == null)
+                CustomerAnimator = GetComponentInChildren<CustomerAnimator>();
+        }
     }
 }

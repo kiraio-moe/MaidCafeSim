@@ -23,6 +23,7 @@ namespace MaidCafe.Components.Agent.Customer
 
         void Start()
         {
+            // Register State Commands
             StateMachine
                 .AddCommand(Order.Name)
                 .SetTargetState<Order>()
@@ -43,7 +44,7 @@ namespace MaidCafe.Components.Agent.Customer
             //     .SetTargetState<Leave>()
             //     .SetCondition(() => StateMachine.CurrentState is Walk && !AgentController.IsMoving);
 
-            StateMachine.ExecuteCommand(Walk.Name); // Make it Walk
+            StateMachine.ExecuteCommand(Walk.Name); // Walk state as default
         }
     }
 }

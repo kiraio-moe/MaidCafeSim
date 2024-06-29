@@ -18,7 +18,7 @@ namespace MaidCafe.Components.Agent.Customer
 
         public override void Update()
         {
-            if (canSpawn)
+            // if (canSpawn)
                 StartCoroutine(TableCheck(delay));
         }
 
