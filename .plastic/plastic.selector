@@ -1,0 +1,4 @@
+repository "Maid Cafe Simulator@Aili@cloud"
+  path "/"
+    br "/main"
+    co "/main"
