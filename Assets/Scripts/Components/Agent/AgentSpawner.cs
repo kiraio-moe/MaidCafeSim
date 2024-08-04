@@ -32,10 +32,23 @@ namespace MaidCafe.Components.Agent
         /// <returns>The instantiated Agent.</returns>
         public virtual AgentController Spawn(AgentController agent, SplineContainer spline)
         {
-            Vector3 initialKnotPosition = spline.Spline.ToArray()[0].Position;
-            AgentController newAgent = Instantiate(agent, initialKnotPosition, Quaternion.identity);
-            // newAgent.GetComponent<SplineAnimate>().Container = spline;
+            // Get the initial knot position in local space
+            Vector3 initialKnotLocalPosition = spline.Spline.ToArray()[0].Position;
+            // Convert the local position to world position
+            Vector3 initialKnotWorldPosition = spline.transform.TransformPoint(
+                initialKnotLocalPosition
+            );
+
+            // Instantiate the agent at the world position
+            AgentController newAgent = Instantiate(
+                agent,
+                initialKnotWorldPosition,
+                Quaternion.identity
+            );
+
+            // Set the spline container for the new agent
             newAgent.SplineContainer = spline;
+
             return newAgent;
         }
 

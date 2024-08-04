@@ -1,6 +1,5 @@
-using UnityEngine;
 using MaidCafe.Components.Agent.Customer.States;
-using MaidCafe.Components.Agent.StateMachine.States;
+using UnityEngine;
 
 namespace MaidCafe.Components.Agent.Customer
 {
@@ -20,31 +19,20 @@ namespace MaidCafe.Components.Agent.Customer
         Leave m_Leave;
 
         public Order Order => m_Order;
+        public Eat Eat => m_Eat;
+        public Pay Pay => m_Pay;
+        public Leave Leave => m_Leave;
 
-        void Start()
+        protected override void Awake()
         {
-            // Register State Commands
-            StateMachine
-                .AddCommand(Order.Name)
-                .SetTargetState<Order>()
-                .SetCondition(() => StateMachine.CurrentState is Walk && !AgentController.IsMoving);
+            base.Awake();
 
-            // StateMachine
-            //     .AddCommand(Eat.Name)
-            //     .SetTargetState<Eat>()
-            //     .SetCondition(() => StateMachine.CurrentState is Walk && !AgentController.IsMoving);
-
-            // StateMachine
-            //     .AddCommand(Pay.Name)
-            //     .SetTargetState<Pay>()
-            //     .SetCondition(() => StateMachine.CurrentState is Walk && !AgentController.IsMoving);
-
-            // StateMachine
-            //     .AddCommand(Leave.Name)
-            //     .SetTargetState<Leave>()
-            //     .SetCondition(() => StateMachine.CurrentState is Walk && !AgentController.IsMoving);
-
-            StateMachine.ExecuteCommand(Walk.Name); // Walk state as default
+            RegisterState(Order, Eat, Pay, Leave);
+            BuildStateMachine();
+            StateMachine.AddCommand(Order.Name).SetTargetState<Order>();
+            StateMachine.AddCommand(Eat.Name).SetTargetState<Eat>();
+            StateMachine.AddCommand(Pay.Name).SetTargetState<Pay>();
+            StateMachine.AddCommand(Leave.Name).SetTargetState<Leave>();
         }
     }
 }

@@ -4,13 +4,9 @@ using UnityEngine.Splines;
 namespace MaidCafe.Components.Environments
 {
     [AddComponentMenu("Maid Cafe/Components/Environments/Chair")]
-    [RequireComponent(typeof(SpriteRenderer), typeof(SplineContainer))]
+    [RequireComponent(typeof(SplineContainer))]
     public class Chair : MonoBehaviour
     {
-        [Header("Settings")]
-        [SerializeField]
-        int[] m_StopCheckpointsIndex;
-
         SplineContainer container;
 
         public SplineContainer Container
@@ -19,9 +15,10 @@ namespace MaidCafe.Components.Environments
             set => container = value;
         }
 
-        void Awake()
+        void OnValidate()
         {
-            Container = GetComponent<SplineContainer>();
+            if (Container == null)
+                Container = GetComponent<SplineContainer>();
         }
     }
 }

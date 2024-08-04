@@ -18,6 +18,7 @@ namespace MaidCafe.Components.Agent
 
         Animator animator;
         AgentController agentController;
+        AutonomousBuilder<IAgent> builder;
         IAutonomousMachine<IAgent> stateMachine;
 
         public Animator Animator => animator;
@@ -29,24 +30,27 @@ namespace MaidCafe.Components.Agent
         public IAutonomousMachine<IAgent> StateMachine
         {
             get => stateMachine;
-            private set => stateMachine = value;
+            set => stateMachine = value;
         }
         public Idle Idle => m_Idle;
         public Walk Walk => m_Walk;
 
-        void Awake()
+        protected virtual void Awake()
         {
             animator = GetComponent<Animator>();
             agentController = GetComponentInParent<AgentController>();
 
             // Set initial state
-            StateMachine = new AutonomousBuilder<IAgent>(this)
+            builder = new AutonomousBuilder<IAgent>(this)
                 .SetInitialState(nameof(Idle))
-                .AddState(Idle)
-                .AddState(Walk)
-                .Build();
+                .AddStates(Idle, Walk);
+        }
 
-            // Register State Commands
+        protected void BuildStateMachine()
+        {
+            StateMachine = builder.Build();
+
+            // Register State Machine Commands
             StateMachine
                 .AddCommand(Idle.Name)
                 .SetTargetState<Idle>()
@@ -57,30 +61,54 @@ namespace MaidCafe.Components.Agent
                 .SetCondition(() => StateMachine.CurrentState is Idle && !AgentController.IsMoving);
 
             StateMachine.ExecuteCommand(Idle.Name);
-            Debug.Log($"Init State: {StateMachine.CurrentState.GetType().Name}");
+            Debug.Log($"Initial state: {StateMachine.CurrentState.GetType().Name}");
         }
 
         void OnEnable()
         {
-            StateMachine.Start();
+            StateMachine?.Start();
             StateMachine.StateChanged += StateChanged;
         }
 
         void OnDisable()
         {
-            StateMachine.Stop();
+            StateMachine?.Stop();
             StateMachine.StateChanged -= StateChanged;
-        }
-
-        void StateChanged(State<IAgent> state)
-        {
-            OnStateChanged?.Invoke();
-            Debug.Log($"Change State: {StateMachine.CurrentState.GetType().Name}");
         }
 
         void Update()
         {
-            StateMachine.Update(Time.deltaTime);
+            StateMachine?.Update(Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Invoke OnStateChanged event.
+        /// </summary>
+        /// <param name="state"></param>
+        void StateChanged(State<IAgent> state)
+        {
+            Debug.Log($"State changed to: {state.GetType().Name}");
+            OnStateChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Register a <paramref name="state"/> to the State Machine.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns>State Machine Autonomous Builder</returns>
+        protected AutonomousBuilder<IAgent> RegisterState(State<IAgent> state)
+        {
+            return builder?.AddState(state);
+        }
+
+        /// <summary>
+        /// Register <paramref name="states"/> to the State Machine.
+        /// </summary>
+        /// <param name="states"></param>
+        /// <returns>State Machine Autonomous Builder</returns>
+        protected AutonomousBuilder<IAgent> RegisterState(params State<IAgent>[] states)
+        {
+            return builder?.AddStates(states);
         }
     }
 }
